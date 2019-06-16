@@ -15,6 +15,7 @@ for r, d, f in os.walk(path + 'pilots'):
                 SHIPS[ship_json['xws']] = ship_json
                 for pilot in ship_json['pilots']:
                     if 'cost' in pilot:
+                        pilot['ship'] = ship_json['xws']
                         PILOTS[pilot['xws']] = pilot
 
 # Read upgrades                        
@@ -46,17 +47,24 @@ for qb in QBS:
     cost = 0
     for pilot in qb['pilots']:
         cost += PILOTS[pilot['id']]['cost']
+        ship = SHIPS[PILOTS[pilot['id']]['ship']]
         if 'upgrades' in pilot:
             for upgrade in pilot['upgrades'].values():
                 for card in upgrade:
                     upgradecost = UPGRADES[card]
                     if 'variable' in upgradecost:
                         if upgradecost['variable'] == 'agility':
-                            pass
+                            for stat in ship['stats']:
+                                if 'type' in stat:
+                                    if stat['type'] == 'agility':
+                                        agility = stat['value']
+                                        cost += upgradecost['values'][str(agility)]
+                                        break
                         elif upgradecost['variable'] == 'initiative':
-                            pass
+                            initiative = PILOTS[pilot['id']]['initiative']
+                            cost += upgradecost['values'][str(initiative)]
                         elif upgradecost['variable'] == 'size':
-                            pass
+                            cost += upgradecost['values'][ship['size']]
                         else:
                             print( f"Unknown variability {upgradecost['variable']}")
                     else:
